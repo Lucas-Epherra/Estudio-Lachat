@@ -5,6 +5,7 @@ import Approach from "./sections/Approach";
 import Process from "./sections/Process";
 import FAQ from "./sections/FAQ";
 import Contact from "./sections/Contact";
+import FloatingWhatsApp from "./components/FloatingWhatsApp";
 import Footer from "./sections/Footer";
 
 // App organiza la landing completa.
