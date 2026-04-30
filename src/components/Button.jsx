@@ -1,8 +1,13 @@
 // Botón reutilizable para acciones principales y secundarias.
-// variant="primary" se usa para CTA fuertes.
-// variant="secondary" se usa para acciones alternativas.
+// Acepta props extra como target y rel para enlaces externos.
 
-export default function Button({ href, children, variant = "primary" }) {
+export default function Button({
+  href,
+  children,
+  variant = "primary",
+  target,
+  rel,
+}) {
   const style =
     variant === "primary"
       ? "bg-[#082E3A] text-[#FFF9EF] hover:bg-[#123E4B]"
@@ -11,6 +16,8 @@ export default function Button({ href, children, variant = "primary" }) {
   return (
     <a
       href={href}
+      target={target}
+      rel={rel}
       className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-xs font-bold transition hover:-translate-y-0.5 ${style}`}
     >
       {children}
