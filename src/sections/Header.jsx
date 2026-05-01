@@ -11,16 +11,16 @@ export default function Header() {
         <Logo />
 
         <nav className="hidden items-center gap-10 text-[11px] font-bold text-[#082E3A]/60 md:flex">
-          <a href="#servicios" className="hover:text-[#082E3A]">
+          <a href="#servicios" className="font-large hover:text-[#082E3A]">
             Servicios
           </a>
-          <a href="#metodo" className="hover:text-[#082E3A]">
+          <a href="#metodo" className="font-large hover:text-[#082E3A]">
             Método
           </a>
-          <a href="#faq" className="hover:text-[#082E3A]">
+          <a href="#faq" className="font-large hover:text-[#082E3A]">
             Preguntas
           </a>
-          <a href="#contacto" className="hover:text-[#082E3A]">
+          <a href="#contacto" className="font-large hover:text-[#082E3A]">
             Contacto
           </a>
         </nav>
