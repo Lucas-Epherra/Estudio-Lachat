@@ -65,7 +65,7 @@ export default function Hero() {
           <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full border border-[#D7B56D]/35" />
           <div className="absolute -right-10 bottom-10 h-48 w-48 rounded-full bg-[#EFE4D2]/20 blur-sm" />
 
-          <div className="relative overflow-hidden rounded-[2.4rem] bg-[#082E3A] p-8 text-[#FFF9EF] shadow-[0_35px_90px_rgba(8,46,58,0.24)]">
+          <div className="relative overflow-hidden rounded-[2.4rem] bg-[#082E3A] p-8 text-[#FFF9EF]">
             <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full border border-[#D7B56D]/20" />
             <div className="absolute -bottom-20 -right-12 h-48 w-48 rounded-full bg-[#FFF9EF]/5" />
 

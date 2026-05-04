@@ -1,0 +1,211 @@
+/* ============================================================
+   Contact Form - Estudio Jurídico Lachat
+   Estética editorial / boutique legal premium.
+   ============================================================ */
+
+.contact-form {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid rgba(8, 46, 58, 0.12);
+  border-radius: 1.75rem;
+  background: rgba(255, 252, 245, 0.9);
+}
+
+/* Header interno del formulario */
+
+.contact-form__header {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 42rem;
+}
+
+.contact-form__eyebrow {
+  margin: 0;
+  color: #b89b5e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.contact-form__title {
+  margin: 0;
+  color: #082e3a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.contact-form__description {
+  margin: 0;
+  color: rgba(8, 46, 58, 0.72);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Layout responsive */
+
+.contact-form__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .contact-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Campos */
+
+.contact-form__field {
+  display: grid;
+  gap: 0.45rem;
+  color: #082e3a;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.contact-form__field input,
+.contact-form__field select,
+.contact-form__field textarea {
+  width: 100%;
+  border: 1px solid rgba(8, 46, 58, 0.16);
+  border-radius: 0.95rem;
+  padding: 0.9rem 1rem;
+  background: #fffaf0;
+  color: #082e3a;
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.contact-form__field textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.contact-form__field input::placeholder,
+.contact-form__field textarea::placeholder {
+  color: rgba(8, 46, 58, 0.42);
+}
+
+.contact-form__field input:focus,
+.contact-form__field select:focus,
+.contact-form__field textarea:focus {
+  border-color: #b89b5e;
+  background: #fffdf8;
+}
+
+/* Texto legal */
+
+.contact-form__legal {
+  margin: 0;
+  color: rgba(8, 46, 58, 0.64);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Botón */
+
+.contact-form__submit {
+  justify-self: start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.95rem 1.5rem;
+  background: #082e3a;
+  color: #fffaf0;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+
+.contact-form__submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.contact-form__submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Mensajes de resultado */
+
+.contact-form__feedback {
+  margin: 0;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.contact-form__feedback--success {
+  background: rgba(41, 120, 89, 0.12);
+  color: #1f6f50;
+}
+
+.contact-form__feedback--error {
+  background: rgba(150, 54, 54, 0.12);
+  color: #8a2f2f;
+}
+
+/* Honeypot anti-spam.
+   Lo ocultamos fuera de pantalla, no con display:none,
+   porque algunos bots ignoran campos ocultos reales pero completan estos.
+*/
+
+.contact-form__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Adjuntos
+   ============================================================ */
+
+.contact-form__file-input {
+  cursor: pointer;
+}
+
+.contact-form__help {
+  color: rgba(8, 46, 58, 0.58);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.contact-form__attachments {
+  border: 1px solid rgba(184, 155, 94, 0.22);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(215, 181, 109, 0.08);
+  color: #082e3a;
+}
+
+.contact-form__attachments p {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.contact-form__attachments ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: rgba(8, 46, 58, 0.72);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

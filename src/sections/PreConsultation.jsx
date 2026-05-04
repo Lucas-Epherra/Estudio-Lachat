@@ -64,7 +64,7 @@ Gracias.`;
 
   return (
     <section className="relative mx-auto max-w-7xl px-6 py-20">
-      <div className="overflow-hidden rounded-[2.5rem] border border-[#D7B56D]/30 bg-[#082E3A] shadow-[0_30px_100px_rgba(8,46,58,0.22)]">
+      <div className="overflow-hidden rounded-[2.5rem] border border-[#D7B56D]/30 bg-[#082E3A]">
         <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative p-8 text-[#FFF9EF] md:p-12">
             <div className="absolute -left-20 -top-20 h-56 w-56 rounded-full bg-[#D7B56D]/10 blur-3xl" />
@@ -191,7 +191,7 @@ Gracias.`;
 
               <button
                 type="submit"
-                className="mt-2 w-full rounded-full bg-[#082E3A] px-7 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#FFF9EF] shadow-[0_18px_40px_rgba(8,46,58,0.22)] transition hover:-translate-y-0.5 hover:bg-[#0B3C4B] focus:outline-none focus:ring-4 focus:ring-[#D7B56D]/25 md:w-auto md:self-end"
+                className="mt-2 w-full rounded-full bg-[#082E3A] px-7 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#FFF9EF] transition hover:-translate-y-0.5 hover:bg-[#0B3C4B] focus:outline-none focus:ring-4 focus:ring-[#D7B56D]/25 md:w-auto md:self-end"
               >
                 Enviar consulta por WhatsApp
               </button>
