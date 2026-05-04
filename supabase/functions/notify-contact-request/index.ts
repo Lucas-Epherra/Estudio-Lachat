@@ -137,6 +137,141 @@ const formatDate = (dateValue: string) => {
 };
 
 /**
+ * Encabezados pensados para copiar/pegar en Excel o Google Sheets.
+ *
+ * Usamos separador ; porque en configuraciones regionales como Argentina
+ * suele funcionar mejor que la coma para CSV.
+ */
+const EXCEL_HEADERS = [
+  "Fecha",
+  "Estado",
+  "Nombre",
+  "Telefono",
+  "Email",
+  "Tipo de consulta",
+  "Mensaje",
+  "Tiene adjuntos",
+  "Cantidad adjuntos",
+  "Archivos",
+  "Links de descarga",
+  "ID consulta",
+];
+
+/**
+ * Normaliza texto para que entre en una sola celda de Excel.
+ *
+ * Evita saltos de línea y espacios raros que podrían romper el pegado.
+ */
+const normalizeOneLine = (
+  value: string | number | boolean | null | undefined,
+) => {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+/**
+ * Escapa una celda para formato CSV.
+ *
+ * Envolvemos cada celda entre comillas para que Excel respete textos largos,
+ * símbolos, espacios y posibles separadores internos.
+ */
+const toCsvCell = (value: string | number | boolean | null | undefined) => {
+  const normalizedValue = normalizeOneLine(value);
+
+  return `"${normalizedValue.replaceAll('"', '""')}"`;
+};
+
+/**
+ * Fecha pensada para Excel.
+ *
+ * Formato claro y estable para gestión:
+ * 2026-05-04 18:30
+ */
+const formatDateForExcel = (dateValue: string) => {
+  const date = new Date(dateValue);
+
+  const formatter = new Intl.DateTimeFormat("es-AR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Argentina/Buenos_Aires",
+  });
+
+  return formatter.format(date);
+};
+
+/**
+ * Construye una fila lista para copiar a Excel.
+ *
+ * Incluye:
+ * - datos del cliente
+ * - tipo de consulta
+ * - mensaje resumido en una sola línea
+ * - nombres de archivos
+ * - links de descarga firmados por 15 días
+ */
+const buildExcelRow = (
+  record: ContactRequestRecord,
+  attachments: SignedAttachment[],
+) => {
+  const attachmentNames = attachments
+    .map((attachment) => attachment.fileName)
+    .join(" | ");
+
+  const attachmentLinks = attachments
+    .map((attachment) => attachment.signedUrl)
+    .join(" | ");
+
+  const row = [
+    formatDateForExcel(record.created_at),
+    "Nuevo",
+    record.full_name,
+    record.phone,
+    record.email,
+    record.case_type,
+    record.message,
+    attachments.length > 0 ? "Sí" : "No",
+    attachments.length,
+    attachmentNames,
+    attachmentLinks,
+    record.submission_id,
+  ];
+
+  return row.map(toCsvCell).join(";");
+};
+
+/**
+ * Construye el bloque visible para copiar a Excel.
+ *
+ * Incluye encabezados + fila.
+ */
+const buildExcelCopyBlock = (
+  record: ContactRequestRecord,
+  attachments: SignedAttachment[],
+) => {
+  const headers = EXCEL_HEADERS.map(toCsvCell).join(";");
+  const row = buildExcelRow(record, attachments);
+
+  return `${headers}\n${row}`;
+};
+
+/**
+ * Construye un asunto filtrable y útil.
+ *
+ * Esto permite crear una regla en Gmail:
+ * subject contains [Consulta Web Lachat]
+ */
+const buildEmailSubject = (record: ContactRequestRecord) => {
+  const clientName = normalizeOneLine(record.full_name).slice(0, 80);
+  const caseType = normalizeOneLine(record.case_type);
+
+  return `[Consulta Web Lachat] ${caseType} | ${clientName}`;
+};
+
+/**
  * Crea un cliente administrador de Supabase.
  *
  * SUPABASE_URL:
@@ -238,6 +373,30 @@ const buildAttachmentsHtml = (attachments: SignedAttachment[]) => {
 };
 
 /**
+ * Construye una sección del email pensada para gestión manual en Excel.
+ *
+ * La abogada puede copiar este bloque y pegarlo en una planilla.
+ */
+const buildExcelBlockHtml = (
+  record: ContactRequestRecord,
+  attachments: SignedAttachment[],
+) => {
+  const excelCopyBlock = buildExcelCopyBlock(record, attachments);
+
+  return `
+    <h2 style="margin: 28px 0 10px; font-size: 18px;">
+      Datos para Excel
+    </h2>
+
+    <p style="margin: 0 0 10px; color: #557;">
+      Copiar las siguientes dos líneas y pegarlas en Excel o Google Sheets.
+    </p>
+
+    <pre style="white-space: pre-wrap; word-break: break-word; margin: 0; padding: 14px; border-radius: 12px; background: #F7F1E6; border: 1px solid #E9D8B8; color: #082E3A; font-family: Consolas, Monaco, monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(excelCopyBlock)}</pre>
+  `;
+};
+
+/**
  * Construye el HTML completo del email.
  *
  * Usamos estilos inline porque los clientes de email
@@ -302,12 +461,13 @@ const buildEmailHtml = (
             <div style="padding: 16px; border-radius: 12px; background: #FFF9EF; border: 1px solid #E9D8B8;">
               <p style="margin: 0; white-space: pre-line;">${escapeHtml(record.message)}</p>
             </div>
-
             <h2 style="margin: 28px 0 10px; font-size: 18px;">
               Adjuntos
             </h2>
 
             ${buildAttachmentsHtml(attachments)}
+
+            ${buildExcelBlockHtml(record, attachments)}
 
             <div style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #EEE;">
               <p style="margin: 0; font-size: 12px; color: #667;">
@@ -330,13 +490,21 @@ const buildEmailHtml = (
  *
  * Buena práctica para compatibilidad con clientes de correo.
  */
+/**
+ * Construye una versión texto plano del email.
+ *
+ * Buena práctica para compatibilidad con clientes de correo.
+ * También incluimos una fila lista para copiar a Excel.
+ */
 const buildEmailText = (
   record: ContactRequestRecord,
   attachments: SignedAttachment[],
 ) => {
   const attachmentLines = attachments.length
     ? attachments
-        .map((attachment) => `- ${attachment.fileName}: ${attachment.signedUrl}`)
+        .map(
+          (attachment) => `- ${attachment.fileName}: ${attachment.signedUrl}`,
+        )
         .join("\n")
     : "Sin archivos adjuntos.";
 
@@ -344,6 +512,7 @@ const buildEmailText = (
 Nueva consulta desde Estudio Lachat
 
 Fecha: ${formatDate(record.created_at)}
+Estado sugerido: Nuevo
 Nombre: ${record.full_name}
 Email: ${record.email}
 Teléfono / WhatsApp: ${record.phone}
@@ -357,11 +526,13 @@ ${attachmentLines}
 
 Los links de descarga son privados y vencen en 15 días.
 
+Datos para Excel:
+${buildExcelCopyBlock(record, attachments)}
+
 ID de consulta:
 ${record.submission_id}
   `.trim();
 };
-
 /**
  * Envía el email con Resend.
  */
@@ -390,7 +561,7 @@ const sendNotificationEmail = async (
     body: JSON.stringify({
       from: fromEmail,
       to: [notificationEmail],
-      subject: `Nueva consulta legal: ${record.case_type}`,
+      subject: buildEmailSubject(record),
       html: buildEmailHtml(record, attachments),
       text: buildEmailText(record, attachments),
     }),
