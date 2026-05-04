@@ -12,14 +12,8 @@ import Footer from "../sections/Footer";
 /**
  * Home organiza la landing comercial principal.
  *
- * Mantiene:
- * - presentación del estudio
- * - servicios
- * - situaciones frecuentes
- * - proceso
- * - preguntas frecuentes
- * - pre-consulta rápida
- * - footer con CTA final integrado
+ * La pre-consulta rápida queda en la home.
+ * La consulta formal vive en /consulta.
  */
 
 export default function Home() {
@@ -35,10 +29,7 @@ export default function Home() {
       <Process />
       <FAQ />
       <PreConsultation />
-
-      {/* Footer ahora absorbe la antigua sección azul final */}
       <Footer />
-
       <FloatingWhatsApp />
     </main>
   );
