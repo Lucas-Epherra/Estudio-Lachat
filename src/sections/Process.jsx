@@ -22,7 +22,7 @@ export default function Process() {
         {processSteps.map((step, index) => (
           <article
             key={step}
-            className="rounded-[1.8rem] border border-[#D7B56D]/25 bg-[#FFFDF7]/75 p-8 text-center shadow-[0_20px_60px_rgba(8,46,58,0.06)]"
+            className="rounded-[1.8rem] border border-[#D7B56D]/25 bg-[#FFFDF7]/75 p-8 text-center"
           >
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#082E3A] font-serif text-xl text-[#FFF9EF]">
               {index + 1}

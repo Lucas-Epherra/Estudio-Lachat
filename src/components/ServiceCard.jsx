@@ -8,7 +8,7 @@ export default function ServiceCard({ service }) {
   const serviceWhatsappUrl = buildWhatsAppUrl(service.whatsappMessage);
 
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] border border-[#D7B56D]/25 bg-[#FFF9EF]/80 p-8 shadow-[0_24px_80px_rgba(8,46,58,0.08)] transition duration-300 hover:-translate-y-1 hover:border-[#D7B56D]/50 hover:shadow-[0_30px_90px_rgba(8,46,58,0.12)]">
+    <article className="group relative overflow-hidden rounded-[2rem] border border-[#D7B56D]/25 bg-[#FFF9EF]/80 p-8 transition duration-300 hover:-translate-y-1 hover:border-[#D7B56D]/50 ">
       <div className="mb-8 flex items-center justify-between">
         <span className="font-serif text-5xl text-[#D7B56D]/70">
           {service.number}

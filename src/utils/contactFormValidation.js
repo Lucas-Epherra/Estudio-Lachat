@@ -1,8 +1,8 @@
+import { ATTACHMENTS_CONFIG } from "../constants/contactForm";
+import { getFileExtension } from "./fileHelpers";
+
 /**
  * Valida formato básico de email.
- *
- * No buscamos una validación perfecta, porque los emails tienen muchos casos raros.
- * Esto alcanza para evitar errores obvios en frontend.
  */
 
 const isValidEmail = (email) => {
@@ -18,6 +18,51 @@ const normalizeText = (value) => {
 };
 
 /**
+ * Valida archivos adjuntos.
+ *
+ * Validamos:
+ * - cantidad máxima
+ * - extensión
+ * - tipo MIME cuando el navegador lo informa
+ * - peso máximo
+ */
+
+export const validateAttachments = (files) => {
+  if (!files.length) {
+    return null;
+  }
+
+  if (files.length > ATTACHMENTS_CONFIG.MAX_FILES) {
+    return `Podés adjuntar hasta ${ATTACHMENTS_CONFIG.MAX_FILES} archivos.`;
+  }
+
+  for (const file of files) {
+    const extension = getFileExtension(file.name);
+
+    const hasValidExtension =
+      ATTACHMENTS_CONFIG.ACCEPTED_EXTENSIONS.includes(extension);
+
+    /**
+     * Algunos navegadores o sistemas pueden devolver file.type vacío.
+     * En ese caso no bloqueamos solo por MIME, pero sí exigimos extensión válida.
+     */
+
+    const hasValidMimeType =
+      !file.type || ATTACHMENTS_CONFIG.ACCEPTED_MIME_TYPES.includes(file.type);
+
+    if (!hasValidExtension || !hasValidMimeType) {
+      return "Solo se permiten archivos PDF, JPG, PNG, DOC o DOCX.";
+    }
+
+    if (file.size > ATTACHMENTS_CONFIG.MAX_FILE_SIZE_BYTES) {
+      return `Cada archivo debe pesar menos de ${ATTACHMENTS_CONFIG.MAX_FILE_SIZE_MB} MB.`;
+    }
+  }
+
+  return null;
+};
+
+/**
  * Valida los campos del formulario de contacto.
  *
  * Retorna:
@@ -26,18 +71,11 @@ const normalizeText = (value) => {
  * - string con mensaje de error si hay un problema visible para el usuario.
  */
 
-export const validateContactForm = (form) => {
+export const validateContactForm = (form, files = []) => {
   const fullName = normalizeText(form.fullName);
   const email = normalizeText(form.email);
   const phone = normalizeText(form.phone);
   const message = normalizeText(form.message);
-
-  /**
-   * Honeypot anti-spam.
-   *
-   * Este campo está oculto para usuarios reales.
-   * Si llega con contenido, lo más probable es que sea un bot.
-   */
 
   if (normalizeText(form.company) !== "") {
     return "spam";
@@ -61,6 +99,12 @@ export const validateContactForm = (form) => {
 
   if (message.length > 2000) {
     return "La consulta es demasiado extensa. Resumila un poco para poder enviarla.";
+  }
+
+  const attachmentsError = validateAttachments(files);
+
+  if (attachmentsError) {
+    return attachmentsError;
   }
 
   return null;

@@ -1,34 +1,33 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import {
+  ATTACHMENTS_CONFIG,
   CASE_TYPES,
   CONTACT_REQUEST_STATUS,
   FORM_STATUS,
   INITIAL_CONTACT_FORM,
 } from "../constants/contactForm";
 import { validateContactForm } from "../utils/contactFormValidation";
+import { buildStoragePath } from "../utils/fileHelpers";
 import "../styles/contactForm.css";
 
 /**
  * Formulario real de contacto para Estudio Jurídico Lachat.
  *
- * Fase 1:
- * - Guarda consultas en Supabase.
- * - No maneja archivos todavía.
- * - Incluye honeypot anti-spam.
- *
  * Fase 2:
- * - Agregaremos carga de archivos a Supabase Storage.
+ * - Guarda consultas en Supabase Database.
+ * - Sube adjuntos a Supabase Storage.
+ * - Guarda las rutas de archivos en contact_requests.file_paths.
+ * - Mantiene honeypot anti-spam.
  */
 
 export default function ContactForm() {
+  const fileInputRef = useRef(null);
+
   const [form, setForm] = useState(INITIAL_CONTACT_FORM);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [status, setStatus] = useState(FORM_STATUS.IDLE);
   const [feedback, setFeedback] = useState("");
-
-  /**
-   * Actualiza cualquier campo del formulario usando su atributo name.
-   */
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -40,46 +39,94 @@ export default function ContactForm() {
   };
 
   /**
-   * Construye el objeto que se enviará a Supabase.
-   *
-   * Nota:
-   * - submission_id se genera en frontend para que en Fase 2 podamos usarlo
-   *   también como carpeta de Storage.
-   * - No usamos .select() después del insert porque no hay policy pública de SELECT.
+   * Convierte FileList en array real.
    */
 
-  const buildPayload = () => {
+  const handleFilesChange = (event) => {
+    const files = Array.from(event.target.files || []);
+
+    setSelectedFiles(files);
+  };
+
+  /**
+   * Limpia formulario y input file.
+   */
+
+  const resetForm = () => {
+    setForm(INITIAL_CONTACT_FORM);
+    setSelectedFiles([]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  /**
+   * Sube archivos a Supabase Storage.
+   *
+   * Retorna un array con las rutas subidas.
+   */
+
+  const uploadAttachments = async (submissionId) => {
+    const uploadedPaths = [];
+
+    for (const [index, file] of selectedFiles.entries()) {
+      const filePath = buildStoragePath({
+        submissionId,
+        fileName: file.name,
+        index,
+      });
+
+      const { error } = await supabase.storage
+        .from(ATTACHMENTS_CONFIG.BUCKET_NAME)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      uploadedPaths.push(filePath);
+    }
+
+    return uploadedPaths;
+  };
+
+  /**
+   * Construye el payload final para la tabla contact_requests.
+   */
+
+  const buildPayload = ({ submissionId, filePaths }) => {
     return {
-      submission_id: crypto.randomUUID(),
+      submission_id: submissionId,
       full_name: form.fullName.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
       case_type: form.caseType,
       message: form.message.trim(),
-      has_files: false,
-      file_paths: [],
+      has_files: filePaths.length > 0,
+      file_paths: filePaths,
       status: CONTACT_REQUEST_STATUS.NEW,
     };
   };
 
-  /**
-   * Envía la consulta a Supabase.
-   */
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const validationError = validateContactForm(form);
+    const validationError = validateContactForm(form, selectedFiles);
 
     /**
-     * Si el honeypot detecta spam, fingimos éxito.
-     * No conviene mostrar "detectamos spam", porque le das pistas al bot.
+     * Honeypot:
+     * fingimos éxito para no darle pistas al bot.
      */
 
     if (validationError === "spam") {
       setStatus(FORM_STATUS.SUCCESS);
       setFeedback("Consulta enviada correctamente.");
-      setForm(INITIAL_CONTACT_FORM);
+      resetForm();
       return;
     }
 
@@ -92,37 +139,53 @@ export default function ContactForm() {
     setStatus(FORM_STATUS.LOADING);
     setFeedback("");
 
-    const payload = buildPayload();
+    const submissionId = crypto.randomUUID();
 
-    const { error } = await supabase.from("contact_requests").insert(payload);
+    try {
+      /**
+       * Orden elegido:
+       * 1. Subimos archivos.
+       * 2. Si suben bien, insertamos la consulta.
+       *
+       * Esto evita guardar leads incompletos en la base.
+       */
 
-    if (error) {
-      console.error("Supabase insert error:", error);
+      const filePaths = await uploadAttachments(submissionId);
+
+      const payload = buildPayload({
+        submissionId,
+        filePaths,
+      });
+
+      const { error } = await supabase.from("contact_requests").insert(payload);
+
+      if (error) {
+        throw error;
+      }
+
+      setStatus(FORM_STATUS.SUCCESS);
+      setFeedback(
+        filePaths.length > 0
+          ? "Consulta enviada correctamente. El estudio recibió tu información y documentación."
+          : "Consulta enviada correctamente. El estudio recibió tu información."
+      );
+
+      resetForm();
+    } catch (error) {
+      console.error("Contact form submit error:", error);
 
       setStatus(FORM_STATUS.ERROR);
       setFeedback(
-        "No pudimos enviar la consulta. Probá nuevamente o escribinos por WhatsApp."
+        "No pudimos enviar la consulta. Revisá los archivos o probá nuevamente."
       );
-
-      return;
     }
-
-    setStatus(FORM_STATUS.SUCCESS);
-    setFeedback(
-      "Consulta enviada correctamente. El estudio recibió tu información y se comunicará con vos."
-    );
-    setForm(INITIAL_CONTACT_FORM);
   };
 
   const isSubmitting = status === FORM_STATUS.LOADING;
 
   return (
     <form className="contact-form" onSubmit={handleSubmit} noValidate>
-      {/* 
-        Honeypot anti-spam.
-        Está oculto visualmente mediante CSS.
-        Los usuarios reales no deberían completarlo.
-      */}
+      {/* Honeypot anti-spam */}
       <div className="contact-form__trap" aria-hidden="true">
         <label htmlFor="company">Empresa</label>
         <input
@@ -144,7 +207,8 @@ export default function ContactForm() {
         </h2>
 
         <p className="contact-form__description">
-          Completá tus datos y contanos brevemente qué necesitás resolver.
+          Completá tus datos, contanos brevemente qué necesitás resolver y
+          adjuntá documentación si ya la tenés disponible.
         </p>
       </div>
 
@@ -216,6 +280,39 @@ export default function ContactForm() {
           required
         />
       </label>
+
+      <label className="contact-form__field">
+        <span>Documentación adjunta</span>
+
+        <input
+          ref={fileInputRef}
+          className="contact-form__file-input"
+          type="file"
+          multiple
+          accept={ATTACHMENTS_CONFIG.ACCEPTED_EXTENSIONS.join(",")}
+          onChange={handleFilesChange}
+        />
+
+        <small className="contact-form__help">
+          Podés adjuntar hasta {ATTACHMENTS_CONFIG.MAX_FILES} archivos PDF, JPG,
+          PNG, DOC o DOCX. Máximo {ATTACHMENTS_CONFIG.MAX_FILE_SIZE_MB} MB por
+          archivo.
+        </small>
+      </label>
+
+      {selectedFiles.length > 0 && (
+        <div className="contact-form__attachments">
+          <p>Archivos seleccionados:</p>
+
+          <ul>
+            {selectedFiles.map((file) => (
+              <li key={`${file.name}-${file.size}-${file.lastModified}`}>
+                {file.name} · {(file.size / 1024 / 1024).toFixed(2)} MB
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <p className="contact-form__legal">
         Al enviar este formulario aceptás ser contactado/a por el estudio para

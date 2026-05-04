@@ -11,7 +11,6 @@
   border: 1px solid rgba(8, 46, 58, 0.12);
   border-radius: 1.75rem;
   background: rgba(255, 252, 245, 0.9);
-  box-shadow: 0 24px 80px rgba(8, 46, 58, 0.08);
 }
 
 /* Header interno del formulario */
@@ -83,7 +82,6 @@
   outline: none;
   transition:
     border-color 160ms ease,
-    box-shadow 160ms ease,
     background-color 160ms ease;
 }
 
@@ -102,7 +100,6 @@
 .contact-form__field textarea:focus {
   border-color: #b89b5e;
   background: #fffdf8;
-  box-shadow: 0 0 0 4px rgba(184, 155, 94, 0.16);
 }
 
 /* Texto legal */
@@ -128,13 +125,11 @@
   cursor: pointer;
   transition:
     transform 160ms ease,
-    box-shadow 160ms ease,
     opacity 160ms ease;
 }
 
 .contact-form__submit:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 14px 34px rgba(8, 46, 58, 0.18);
 }
 
 .contact-form__submit:disabled {
@@ -174,4 +169,43 @@
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+
+/* ============================================================
+   Adjuntos
+   ============================================================ */
+
+.contact-form__file-input {
+  cursor: pointer;
+}
+
+.contact-form__help {
+  color: rgba(8, 46, 58, 0.58);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.contact-form__attachments {
+  border: 1px solid rgba(184, 155, 94, 0.22);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(215, 181, 109, 0.08);
+  color: #082e3a;
+}
+
+.contact-form__attachments p {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.contact-form__attachments ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: rgba(8, 46, 58, 0.72);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }

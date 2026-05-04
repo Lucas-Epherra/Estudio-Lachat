@@ -34,7 +34,7 @@ export default function CommonSituations() {
             return (
               <article
                 key={situation.title}
-                className="group rounded-[2rem] border border-[#D7B56D]/25 bg-[#FFF9EF]/80 p-7 shadow-[0_20px_70px_rgba(8,46,58,0.07)] transition duration-300 hover:-translate-y-1 hover:border-[#D7B56D]/50 hover:shadow-[0_28px_85px_rgba(8,46,58,0.11)]"
+                className="group rounded-[2rem] border border-[#D7B56D]/25 bg-[#FFF9EF]/80 p-7 transition duration-300 hover:-translate-y-1 hover:border-[#D7B56D]/50"
               >
                 <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                   <div>
