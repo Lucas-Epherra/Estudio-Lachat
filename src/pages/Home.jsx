@@ -1,0 +1,45 @@
+import Header from "../sections/Header";
+import Hero from "../sections/Hero";
+import Services from "../sections/Services";
+import CommonSituations from "../sections/CommonSituations";
+import Approach from "../sections/Approach";
+import Process from "../sections/Process";
+import PreConsultation from "../sections/PreConsultation";
+import FAQ from "../sections/FAQ";
+import FloatingWhatsApp from "../components/FloatingWhatsApp";
+import Footer from "../sections/Footer";
+
+/**
+ * Home organiza la landing comercial principal.
+ *
+ * Mantiene:
+ * - presentación del estudio
+ * - servicios
+ * - situaciones frecuentes
+ * - proceso
+ * - preguntas frecuentes
+ * - pre-consulta rápida
+ * - footer con CTA final integrado
+ */
+
+export default function Home() {
+  return (
+    <main className="min-h-screen overflow-hidden bg-[#FFF9EF] text-[#082E3A]">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_10%,rgba(215,181,109,0.14),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(8,46,58,0.05),transparent_25%)]" />
+
+      <Header />
+      <Hero />
+      <Services />
+      <CommonSituations />
+      <Approach />
+      <Process />
+      <FAQ />
+      <PreConsultation />
+
+      {/* Footer ahora absorbe la antigua sección azul final */}
+      <Footer />
+
+      <FloatingWhatsApp />
+    </main>
+  );
+}
